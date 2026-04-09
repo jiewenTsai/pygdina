@@ -19,8 +19,16 @@ Python
 import pandas as pd
 from pygdina import GDINA
 
-# Initialize model
-model = GDINA(att_dist="saturated", n_starts=3)
+# Initialize model in a simple way
+# model = GDINA(att_dist="saturated", n_starts=3)
+model = GDINA()
+```
+
+check Q matrix identifiability as
+
+```
+from pygdina import check_q_identifiability
+check_q_identifiability(Q1)
 ```
 
 ## Usage Example (sim30GDINA)
@@ -38,10 +46,10 @@ model.fit(dat, Q)
 
 # Get Mastery Probabilities (mp) - similar to personparm(fit, "mp") in R
 mp = model.person_parm("mp")
-df_mp = pd.DataFrame(mp, columns=['A1', 'A2', 'A3', 'A4', 'A5'])
+pd.DataFrame(mp, columns=['A1', 'A2', 'A3', 'A4', 'A5'])round(4).head()
 
-# Round to 4 decimal places for clean output
-print(df_mp.round(4).head())
+# Get Item Parameter Estimations
+pd.DataFrame(gdina.item_parm).round(4)
 ```
 
 ## References
