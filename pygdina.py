@@ -603,3 +603,77 @@ if __name__ == "__main__":
     print("\n── first 8 persons: true | EAP | mp ────")
     for i in range(8):
         print(f"  {persons[i]}  |  {eap[i]}  |  {mp[i].round(3)}")
+
+
+# ─────────────────────────────────────────────────────────────
+# Check If the Q Matrix is Identifiable.
+# ─────────────────────────────────────────────────────────────
+
+import numpy as np
+
+def check_q_identifiability(Q):
+    """
+    Q-matrix 可辨識性與完備性檢查 (Identifiability & Completeness Check)
+    
+    參考文獻:
+    1. Chiu, C. Y., Douglas, J. A., & Li, X. (2009). Completeness Condition. 
+    2. de la Torre, J. (2011). Identifiability in GDINA.
+    """
+    J, K = Q.shape
+    # 生成 2^K 個潛在屬性剖面 (Attribute Profiles)
+    from pygdina import _skill_profiles
+    att_patterns = _skill_profiles(K) 
+    L = len(att_patterns)
+    
+    # --- 1. 檢查 強可辨識性 (Strong Identifiability) ---
+    # 依據 Chiu et al. (2009)，檢查 Q 是否包含 KxK 單位矩陣
+    missing_pure_skills = []
+    for k in range(K):
+        target = np.zeros(K)
+        target[k] = 1
+        if not any(np.array_equal(row, target) for row in Q):
+            missing_pure_skills.append(f"A{k+1}")
+            
+    is_strongly_identifiable = (len(missing_pure_skills) == 0)
+
+    # --- 2. 檢查 弱可辨識性 (Weak Identifiability) ---
+    # 檢查不同剖面產生的理想反應模式 (Ideal Response Patterns) 是否唯一
+    ideal_responses = []
+    for l in range(L):
+        alpha = att_patterns[l]
+        # eta_jl = 1 代表受測者擁有的能力足以應付題目 j 的要求
+        eta = np.all(alpha >= Q, axis=1).astype(int)
+        ideal_responses.append(tuple(eta))
+    
+    unique_responses = set(ideal_responses)
+    is_weakly_identifiable = (len(unique_responses) == L)
+
+    # --- 3. 診斷情況說明與後果分析 ---
+    report = {"is_identifiable": is_weakly_identifiable}
+
+    if not is_weakly_identifiable:
+        report["level"] = "不可辨識 (Unidentifiable)"
+        report["details"] = "【結構缺失】不同的屬性剖面產生完全相同的作答模式。"
+        report["consequence"] = ("後果：模型參數無唯一解，EM 演算法將無法收斂或隨機收斂，"
+                                 "分類結果 (EMR) 將失去心理計量學意義。")
+        
+        # 找出混淆組別 (使用純 dict 搭配 setdefault 代替 defaultdict)
+        groups = {}
+        for idx, res in enumerate(ideal_responses):
+            groups.setdefault(res, []).append(att_patterns[idx].tolist())
+        report["aliased_profiles"] = [v for v in groups.values() if len(v) > 1]
+        
+    elif not is_strongly_identifiable:
+        report["level"] = "弱可辨識 (Weakly Identifiable)"
+        report["details"] = f"【非完備】滿足區分要求但缺失屬性 {missing_pure_skills} 的純測項。"
+        report["consequence"] = ("後果：依據 de la Torre (2011)，模型雖可解，但迭代次數會顯著增加，"
+                                 "且題參數與能力分類的標準誤 (SE) 會較大，易受隨機誤差干擾。")
+        report["aliased_profiles"] = []
+        
+    else:
+        report["level"] = "強可辨識 (Strongly Identifiable)"
+        report["details"] = "【最優結構】滿足 Chiu et al. (2009) 完備性條件 (Completeness Condition)。"
+        report["consequence"] = "後果：具備最強的統計檢定力，EM 演算法收斂速度最快，且分類準確度最為穩定。"
+        report["aliased_profiles"] = []
+
+    return report
