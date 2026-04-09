@@ -1,6 +1,6 @@
-# pyGDINA: Pure-Python Cognitive Diagnosis Modeling
+# `pygdina`: A Python Toolkit for Diagnostic Classification Modeling
 
-`pyGDINA` is a lightweight, pure-Python implementation of the **Generalized Deterministic Inputs Noisy And gate (GDINA)** model. It is designed to be a Python-native alternative for researchers who currently use the `GDINA` or `CDM` packages in R.
+`pygdina` is a lightweight, pure-Python implementation of the **Generalized Deterministic Inputs Noisy And gate (GDINA)** model. It is designed to be a Python-native alternative for researchers who currently use the `GDINA` or `CDM` packages in R.
 
 ## Key Features
 
