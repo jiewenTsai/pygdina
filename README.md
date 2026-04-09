@@ -13,6 +13,13 @@
 
 Simply download `pygdina.py` and place it in your project folder, or import it directly into Google Colab.
 
+For Google Colab, the `!wget` method can be used directly to download this `pygdina.py` file.
+
+```
+!wget https://raw.githubusercontent.com/jiewenTsai/pygdina/refs/heads/main/pygdina.py
+```
+
+
 Python
 
 ```
