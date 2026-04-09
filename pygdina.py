@@ -609,7 +609,9 @@ if __name__ == "__main__":
 # Check If the Q Matrix is Identifiable.
 # ─────────────────────────────────────────────────────────────
 
-import numpy as np
+# ─────────────────────────────────────────────────────────────
+# Check Q-Matrix Identifiability
+# ─────────────────────────────────────────────────────────────
 
 def check_q_identifiability(Q):
     """
@@ -619,14 +621,14 @@ def check_q_identifiability(Q):
     1. Chiu, C. Y., Douglas, J. A., & Li, X. (2009). Completeness Condition. 
     2. de la Torre, J. (2011). Identifiability in GDINA.
     """
+    Q = np.asarray(Q)
     J, K = Q.shape
-    # 生成 2^K 個潛在屬性剖面 (Attribute Profiles)
-    from pygdina import _skill_profiles
+    
+    # 直接使用同檔案內定義的輔助函數，不需從外部 import
     att_patterns = _skill_profiles(K) 
     L = len(att_patterns)
     
     # --- 1. 檢查 強可辨識性 (Strong Identifiability) ---
-    # 依據 Chiu et al. (2009)，檢查 Q 是否包含 KxK 單位矩陣
     missing_pure_skills = []
     for k in range(K):
         target = np.zeros(K)
@@ -637,11 +639,9 @@ def check_q_identifiability(Q):
     is_strongly_identifiable = (len(missing_pure_skills) == 0)
 
     # --- 2. 檢查 弱可辨識性 (Weak Identifiability) ---
-    # 檢查不同剖面產生的理想反應模式 (Ideal Response Patterns) 是否唯一
     ideal_responses = []
     for l in range(L):
         alpha = att_patterns[l]
-        # eta_jl = 1 代表受測者擁有的能力足以應付題目 j 的要求
         eta = np.all(alpha >= Q, axis=1).astype(int)
         ideal_responses.append(tuple(eta))
     
@@ -656,8 +656,6 @@ def check_q_identifiability(Q):
         report["details"] = "【結構缺失】不同的屬性剖面產生完全相同的作答模式。"
         report["consequence"] = ("後果：模型參數無唯一解，EM 演算法將無法收斂或隨機收斂，"
                                  "分類結果 (EMR) 將失去心理計量學意義。")
-        
-        # 找出混淆組別 (使用純 dict 搭配 setdefault 代替 defaultdict)
         groups = {}
         for idx, res in enumerate(ideal_responses):
             groups.setdefault(res, []).append(att_patterns[idx].tolist())
