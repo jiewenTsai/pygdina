@@ -609,10 +609,6 @@ if __name__ == "__main__":
 # Check If the Q Matrix is Identifiable.
 # ─────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────────────────────
-# Check Q-Matrix Identifiability
-# ─────────────────────────────────────────────────────────────
-
 def check_q_identifiability(Q):
     """
     Q-matrix 可辨識性與完備性檢查 (Identifiability & Completeness Check)
