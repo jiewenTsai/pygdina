@@ -35,7 +35,7 @@ check Q matrix identifiability as
 
 ```
 from pygdina import check_q_identifiability
-check_q_identifiability(Q1)
+check_q_identifiability(Q)
 ```
 
 ## Usage Example (sim30GDINA)
